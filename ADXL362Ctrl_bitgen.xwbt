@@ -1,0 +1,8 @@
+INTSTYLE=ise
+INFILE=C:\Users\Pavel Pershko\Desktop\pocp\spirit_level\ADXL362Ctrl.ncd
+OUTFILE=C:\Users\Pavel Pershko\Desktop\pocp\spirit_level\ADXL362Ctrl.bit
+FAMILY=Artix7
+PART=xc7a100t-3csg324
+WORKINGDIR=C:\Users\Pavel Pershko\Desktop\pocp\spirit_level
+LICENSE=WebPack
+USER_INFO=__0_0_0
