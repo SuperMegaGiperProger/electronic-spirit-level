@@ -62,31 +62,39 @@ architecture Behavioral of main is
 	
 	component DisplayViewer
    port ( SYSCLK : in STD_LOGIC;
-          NUM_L : in STD_LOGIC_VECTOR (11 downto 0);
-          NUM_R : in STD_LOGIC_VECTOR (11 downto 0);
+          NUM_L : in integer range 0 to 2047;
+          NUM_R : in integer range 0 to 2047;
           Q : out STD_LOGIC_VECTOR (0 to 15));
 	end component;
 
-	signal x : std_logic_vector (11 downto 0);
-	signal nil : std_logic;
-	
+	signal x_vec : std_logic_vector (11 downto 0);
+	signal y_vec : std_logic_vector (11 downto 0);
+	signal x : integer range 0 to 2047;
+	signal y : integer range 0 to 2047;
+
 begin
 
 	accel: ADXL362Ctrl port map (
 		SYSCLK => SYSCLK,
 		RESET => RESET,
-		ACCEL_X => x,
-		Data_Ready => nil,
+		ACCEL_X => x_vec,
+		ACCEL_Y => y_vec,
 		SCLK => SCLK,
 		MOSI => MOSI,
 		MISO => MISO,
 		SS => SS
 	);
 	
+	accel_converter: process (x_vec, y_vec)
+	begin
+		x <= to_integer(unsigned(x_vec));
+		y <= to_integer(unsigned(y_vec));
+	end process;
+	
 	displ: DisplayViewer port map (
 		SYSCLK => SYSCLK,
-		NUM_L => "000000000000",
-		NUM_R => x,
+		NUM_L => x,
+		NUM_R => y,
 		Q => DISPLAY
 	);	
 

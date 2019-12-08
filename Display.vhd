@@ -28,8 +28,8 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity DisplayViewer is
    Port ( SYSCLK : in STD_LOGIC;
-          NUM_L : in STD_LOGIC_VECTOR (11 downto 0);
-          NUM_R : in STD_LOGIC_VECTOR (11 downto 0);
+          NUM_L : in integer range 0 to 2047;
+          NUM_R : in integer range 0 to 2047;
           Q : out STD_LOGIC_VECTOR (0 to 15));
 end DisplayViewer;
 
@@ -48,14 +48,31 @@ architecture Behavioral of DisplayViewer is
 	);
 	end component;
 	
-	type digits_arr is array (0 to 3) of integer range 0 to 9;
+	type digits_arr is array (natural range <>) of integer range 0 to 9;
+	subtype num_digits is digits_arr(0 to 3);
+	subtype full_digits_arr is digits_arr(0 to 7);
 	
 	signal clk: std_logic := '0';
 	signal disp_anode: std_logic_vector (0 to 7) := "11111111";
 	signal disp_cathod: std_logic_vector (0 to 7) := "11111111";
 	signal curr_digit: integer range 0 to 9 := 0;
-	signal curr_digit_index: integer range 0 to 3 := 0;
-	signal digits: digits_arr := (8, 7, 6, 5);
+	signal curr_digit_index: integer range 0 to 7 := 0;
+	signal digits: full_digits_arr := (8, 7, 6, 5, 4, 3, 2, 1);
+	
+	function IntToDigits (NUM: in integer range 0 to 2047) return num_digits is
+	variable x : integer range 0 to 2047;
+	variable digits : num_digits;
+	begin
+		x := NUM;
+		
+		for i in 0 to 3 loop
+			digits(i) := x mod 10;
+			
+			x := x / 10;
+		end loop;
+		
+		return digits;
+	end;
 
 begin
 
@@ -64,20 +81,6 @@ begin
 		Q => clk
 	);
 
-	convert_to_digits: process(NUM_R)
-	variable x_int : integer range 0 to 2047;
-	variable x_digits : digits_arr;
-	begin
-		x_int := to_integer(unsigned(NUM_R));
-
-		for i in 0 to 3 loop
-			x_digits(i) := x_int mod 10;
-			
-			x_int := x_int / 10;
-		end loop;
-		
-		digits <= x_digits;
-	end process;
 	
 	cathodes: DigitToCathodes port map (
 		D => curr_digit,
@@ -94,13 +97,18 @@ begin
 		end if;
 	end process;
 	
+	converter_to_digits: process(NUM_L, NUM_R)
+	begin
+		digits <= IntToDigits(NUM_R) & IntToDigits(NUM_L);
+	end process;
+	
 	clk_proc: process(clk)
-	variable next_index: integer range 0 to 3;
+	variable next_index: integer range 0 to 7;
 	begin
 		if rising_edge(clk) then
-			next_index := (curr_digit_index + 1) mod 4;
+			next_index := (curr_digit_index + 1) mod 8;
 			
-			curr_digit <= digits(next_index);
+			curr_digit <= digits(curr_digit_index);
 			curr_digit_index <= next_index;
 		end if;
 	end process;
