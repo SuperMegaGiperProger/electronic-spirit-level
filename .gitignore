@@ -10,6 +10,8 @@
 *.log
 *.lso
 
+*.xwbt
+
 planAhead*
 .Xil/*
 _ngo/*
